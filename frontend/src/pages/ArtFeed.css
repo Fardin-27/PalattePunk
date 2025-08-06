@@ -1,0 +1,40 @@
+.art-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.art-card {
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.1);
+  overflow: hidden;
+  transition: 0.2s;
+}
+
+.art-card:hover {
+  transform: translateY(-5px);
+}
+
+.art-card img {
+  width: 100%;
+  height: 280px;
+  object-fit: cover;
+}
+
+.art-card h3 {
+  font-size: 1.1rem;
+  margin: 10px;
+}
+
+.art-card p {
+  margin: 0 10px 10px;
+  font-size: 0.9rem;
+  color: #444;
+}
+
+.price {
+  color: crimson;
+  font-weight: bold;
+}

@@ -1,0 +1,113 @@
+// ✅ src/pages/AuthPage.css
+.auth-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: #fff;
+  padding: 20px;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 420px;
+  padding: 30px;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 0 25px rgba(0,0,0,0.1);
+  text-align: center;
+}
+
+.auth-card h2 {
+  margin-bottom: 25px;
+  font-size: 28px;
+  font-weight: 700;
+  color: #333;
+}
+
+.auth-card input,
+.auth-card select {
+  width: 100%;
+  padding: 14px;
+  margin-bottom: 16px;
+  border-radius: 30px;
+  border: 1px solid #ccc;
+  font-size: 16px;
+  box-sizing: border-box;
+}
+
+.auth-card button {
+  width: 100%;
+  padding: 12px;
+  background-color: crimson;
+  color: white;
+  border: none;
+  font-size: 16px;
+  border-radius: 30px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.auth-card .divider {
+  margin: 16px 0;
+  font-size: 14px;
+  color: #888;
+  position: relative;
+}
+
+.auth-card .divider::before,
+.auth-card .divider::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 45%;
+  height: 1px;
+  background-color: #ccc;
+}
+
+.auth-card .divider::before { left: 0; }
+.auth-card .divider::after { right: 0; }
+
+.auth-card .switch-link {
+  margin-top: 12px;
+  font-size: 14px;
+}
+
+.auth-card .switch-link a {
+  color: crimson;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.auth-card .error {
+  color: red;
+  margin-top: 10px;
+  font-size: 14px;
+}
+
+.password-wrapper {
+  position: relative;
+}
+
+.password-wrapper input {
+  padding-right: 40px;
+}
+
+.password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 15px;
+  transform: translateY(-50%);
+  cursor: pointer;
+  font-size: 16px;
+  color: #888;
+}
+
+.auth-card .forgot {
+  font-size: 14px;
+  color: #0066cc;
+  text-decoration: none;
+  display: block;
+  text-align: right;
+  margin-bottom: 20px;
+}
