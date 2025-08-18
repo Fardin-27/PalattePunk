@@ -1,0 +1,39 @@
+/* ✅ Global shell/layout rules. Makes content fill full width beside the rail. */
+:root {
+  /* Keep this in sync with LeftRail.css width */
+  --rail-width: 88px;
+}
+
+html, body, #root {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  background: #fff;
+}
+
+.app-shell {
+  width: 100vw;
+  min-height: 100vh;
+  position: relative;
+  background: #fff;
+}
+
+/* Main content: fill the whole screen minus the left rail */
+.app-content.with-rail {
+  position: relative;
+  margin-left: var(--rail-width);
+  width: calc(100vw - var(--rail-width));
+  max-width: none;              /* remove any caps */
+  min-height: 100vh;
+  padding: 10px 12px 40px;      /* page padding */
+  box-sizing: border-box;
+  background: #fff;
+}
+
+/* In case you ever render content without the rail */
+.app-content {
+  width: 100vw;
+  max-width: none;
+}

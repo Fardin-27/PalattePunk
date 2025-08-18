@@ -1,0 +1,42 @@
+.admin-users-wrap {
+  background: #fff;
+  margin: 24px;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.06);
+}
+
+.admin-users-wrap h2 {
+  margin: 0 0 12px;
+}
+
+.users-table .row {
+  display: grid;
+  grid-template-columns: 1.2fr 1.6fr .8fr .8fr 1.8fr;
+  gap: 8px;
+  align-items: center;
+  padding: 10px 8px;
+  border-bottom: 1px solid #eee;
+}
+.users-table .users-head {
+  font-weight: 700;
+  background: #fafafa;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+
+.actions button {
+  margin-right: 6px;
+  padding: 6px 10px;
+  border: none;
+  border-radius: 8px;
+  background: #eee;
+  cursor: pointer;
+}
+.actions button:hover { background: #e0e0e0; }
+
+.error-msg {
+  color: #c62828;
+  margin-bottom: 10px;
+  font-weight: 600;
+}

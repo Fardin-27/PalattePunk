@@ -1,0 +1,91 @@
+/* Layout lives in HomePage.css (sidebar, topbar, etc.)
+   This file styles the form card inside main-content. */
+
+.post-artwork-wrapper {
+  max-width: 680px;
+  margin: 48px auto;
+  background: #fff;
+  padding: 28px;
+  border-radius: 14px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+.post-artwork-wrapper h2 {
+  margin: 0 0 18px;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.post-artwork-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Inputs */
+.post-artwork-form input[type="text"],
+.post-artwork-form textarea,
+.post-artwork-form input[type="file"] {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  font-size: 15px;
+  outline: none;
+  background: #fff;
+}
+
+.post-artwork-form textarea {
+  min-height: 110px;
+  resize: vertical;
+}
+
+/* Focus */
+.post-artwork-form input:focus,
+.post-artwork-form textarea:focus {
+  border-color: #c2182b;           /* crimson-ish */
+  box-shadow: 0 0 0 3px rgba(194, 24, 43, 0.12);
+}
+
+/* Button */
+.post-artwork-form button {
+  margin-top: 6px;
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  background: #cf1230;             /* primary action */
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.02s ease, background 0.15s ease;
+}
+
+.post-artwork-form button:hover {
+  background: #b60f29;
+}
+
+.post-artwork-form button:active {
+  transform: translateY(1px);
+}
+
+/* Helper messages */
+.success-msg {
+  margin-top: 10px;
+  color: #1b8e3f;
+  font-weight: 600;
+}
+
+.error-msg {
+  margin-top: 10px;
+  color: #c62828;
+  font-weight: 600;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .post-artwork-wrapper {
+    margin: 24px 16px;
+    padding: 20px;
+  }
+}

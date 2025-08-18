@@ -1,0 +1,24 @@
+/* ✅ Layout.css */
+
+.layout {
+  display: flex;
+}
+
+/* Sidebar is fixed on the left */
+.layout .left-rail {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 70px; /* sidebar width */
+  background: #fff;
+  border-right: 1px solid #eee;
+  z-index: 100;
+}
+
+/* Main content should shift right */
+.layout .content {
+  flex: 1;
+  margin-left: 70px; /* same as sidebar width */
+  padding: 20px;
+}

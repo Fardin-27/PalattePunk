@@ -1,4 +1,4 @@
-// ✅ src/pages/LoginPage.js
+// src/pages/LoginPage.js
 import React, { useState } from 'react';
 import axios from 'axios';
 import { saveToken } from '../utils/auth';
@@ -21,7 +21,7 @@ const LoginPage = () => {
     try {
       const response = await axios.post('http://localhost:5000/api/auth/login', formData);
       saveToken(response.data.token);
-      window.location.href = '/home';
+      window.location.href = '/home'; // ✅ after login, go to Home
     } catch (err) {
       setError(err.response?.data?.message || 'Login failed');
     }
@@ -60,7 +60,6 @@ const LoginPage = () => {
           </div>
 
           <button type="submit">Log in</button>
-
           <div className="divider">OR</div>
         </form>
 

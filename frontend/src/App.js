@@ -1,45 +1,64 @@
+// ✅ src/App.js
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
+
+import ProtectedRoute from './components/ProtectedRoute';
+
+// Public pages
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
-/*import ArtistDashboard from './pages/ArtistDashboard';*/
-/*import BuyerHome from './pages/BuyerHome';*/
-import ArtFeed from './pages/ArtFeed';
-import AdminDashboard from './pages/AdminDashboard';
-import ProtectedRoute from './components/ProtectedRoute';
-import HomePage from './pages/HomePage';
-import DashboardRouter from './routes/DashboardRouter';
 
-function App() {
+// Layout (adds LeftRail to all nested routes)
+import AppLayout from './layout/AppLayout';
+
+// Protected pages (render inside AppLayout)
+import HomePage from './pages/HomePage';
+import ExplorePage from './pages/ExplorePage';
+import PostArtwork from './pages/PostArtwork';
+import CreateAdminPage from './pages/CreateAdminPage';
+import AdminDashboard from './pages/AdminDashboard';
+import ManageUsers from './pages/ManageUsers';
+import ArtworkDetails from './pages/ArtworkDetails';
+
+// Optional utility stubs/pages
+import Notifications from './pages/Notifications';
+import Messages from './pages/Messages';
+import Settings from './pages/Settings';
+
+export default function App() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/login" />} />
+      {/* Default → login */}
+      <Route path="/" element={<Navigate to="/login" replace />} />
+
+      {/* Public auth routes */}
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
-      <Route path="/home" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
-      <Route path="/home" element={<DashboardRouter />} />
 
-      {/* Protected Routes */}
-
+      {/* Protected routes with shared LeftRail layout */}
       <Route
-        path="/home"
         element={
           <ProtectedRoute>
-            <ArtFeed />
+            <AppLayout />
           </ProtectedRoute>
         }
-      />
-      <Route
-        path="/admin-dashboard"
-        element={
-          <ProtectedRoute>
-            <AdminDashboard />
-          </ProtectedRoute>
-        }
-      />
+      >
+        <Route path="/home" element={<HomePage />} />
+        <Route path="/explore" element={<ExplorePage />} />
+        <Route path="/post" element={<PostArtwork />} />
+        <Route path="/admin/create" element={<CreateAdminPage />} />
+        <Route path="/admin/users" element={<ManageUsers />} />
+        <Route path="/admin-dashboard" element={<AdminDashboard />} />
+        <Route path="/art/:id" element={<ArtworkDetails />} />
 
+        {/* Optional utility pages */}
+        <Route path="/notifications" element={<Notifications />} />
+        <Route path="/messages" element={<Messages />} />
+        <Route path="/settings" element={<Settings />} />
+      </Route>
+
+      {/* Fallback for unknown routes */}
+      <Route path="*" element={<Navigate to="/home" replace />} />
     </Routes>
   );
 }
-
-export default App;

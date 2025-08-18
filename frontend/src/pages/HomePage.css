@@ -1,91 +1,27 @@
-/* ✅ src/pages/HomePage.css */
-
-.home-page-wrapper {
-  display: flex;
-  height: 100vh;
-  background-color: #f9f9f9;
-}
-
-.sidebar {
-  width: 80px;
-  background-color: #fff;
-  border-right: 1px solid #ddd;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding-top: 20px;
-}
-
-.sidebar h2 {
-  display: none;
-}
-
-.sidebar ul {
-  list-style: none;
-  padding: 0;
-  margin-top: 30px;
-}
-
-.sidebar li {
-  font-size: 20px;
-  margin: 20px 0;
-  cursor: pointer;
-}
-
-.main-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.topbar {
+/* ✅ Wide, simple search row (no width cap in the page) */
+.top-search {
   display: flex;
   align-items: center;
-  padding: 16px;
-  background-color: #fff;
-  border-bottom: 1px solid #ddd;
+  gap: 10px;
+  margin: 8px 12px 14px;
 }
 
-.search-bar {
+.top-search input {
   flex: 1;
-  padding: 10px 16px;
-  border-radius: 25px;
-  border: 1px solid #ccc;
-  font-size: 16px;
-  margin-right: 16px;
+  min-width: 260px;
+  height: 42px;
+  padding: 0 12px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  outline: none;
 }
+.top-search input:focus { border-color: #bbb; }
 
-.profile-button {
-  padding: 8px 12px;
-  border-radius: 50%;
-  border: none;
-  background-color: crimson;
-  color: #fff;
-  font-weight: bold;
+.top-search button {
+  height: 42px;
+  padding: 0 14px;
+  border: 1px solid #ddd;
+  background: #f7f7f7;
+  border-radius: 10px;
   cursor: pointer;
-}
-
-.filter-bar {
-  display: flex;
-  overflow-x: auto;
-  gap: 12px;
-  padding: 12px 20px;
-  background-color: #fff;
-  border-bottom: 1px solid #eee;
-}
-
-.filter-button {
-  padding: 10px 18px;
-  background-color: #eee;
-  border: none;
-  border-radius: 20px;
-  font-size: 14px;
-  cursor: pointer;
-  white-space: nowrap;
-}
-
-.filter-button.active,
-.filter-button:hover {
-  background-color: #d32f2f;
-  color: #fff;
 }

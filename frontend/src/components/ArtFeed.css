@@ -1,14 +1,46 @@
-/* ✅ src/components/ArtFeed.css */
-.art-feed {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 20px;
-  padding: 20px;
+/* ✅ Full-width, gapless masonry using CSS Grid with JS row spans */
+
+.feed-wrapper {
+  width: 100%;
+  max-width: none;
+  padding: 0 12px 24px;
+  box-sizing: border-box;
 }
 
-.art-card img {
+/* The container fills the whole area to the right of your left rail */
+.grid-masonry {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); /* fills full width */
+  grid-auto-rows: 8px;   /* ← must match ROW in JS */
+  gap: 16px;             /* ← must match GAP in JS */
   width: 100%;
-  border-radius: 12px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  object-fit: cover;
+  max-width: none;
 }
+
+/* Each card spans a dynamic number of rows computed in JS */
+.pin {
+  border: 1px solid #eee;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(0,0,0,.05);
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform .12s ease, box-shadow .12s ease;
+}
+.pin:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,.08); }
+
+/* Inner wrapper is what we measure for height */
+.pin-inner { display: block; }
+
+/* Media */
+.pin img { width: 100%; height: auto; display: block; }
+.img-placeholder { width: 100%; padding: 60px 0; text-align: center; color: #666; background: #f7f7f7; }
+
+/* Meta */
+.pin-meta { padding: 10px 12px 12px; }
+.pin-title { font-weight: 700; font-size: 14px; margin-bottom: 4px; line-height: 1.3; }
+.pin-sub   { color: #666; font-size: 12px; }
+
+/* Messages */
+.feed-note  { color: #666; padding: 8px 4px; }
+.feed-error { color: #b71c1c; font-weight: 600; padding: 8px 4px; }

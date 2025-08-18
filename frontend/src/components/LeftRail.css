@@ -1,0 +1,67 @@
+/* ✅ Pinterest-like vertical icon bar */
+.left-rail {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 88px;
+  height: 100vh;
+  border-right: 1px solid #eee;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  z-index: 50;
+}
+
+.lr-top, .lr-bottom {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 0;
+  gap: 6px;
+}
+
+.lr-logo {
+  width: 48px;
+  height: 48px;
+  margin: 6px 0 10px;
+  border: none;
+  border-radius: 12px;
+  font-size: 22px;
+  cursor: pointer;
+  background: #f6f6f6;
+}
+.lr-logo:hover { background: #efefef; }
+
+.lr-item {
+  width: 48px;
+  height: 48px;
+  border: none;
+  border-radius: 12px;
+  background: transparent;
+  cursor: pointer;
+  transition: background .15s ease, transform .1s ease;
+  display: grid;
+  place-items: center;
+}
+.lr-item:hover { background: #f6f6f6; transform: translateY(-1px); }
+
+.lr-item.active {
+  background: #111;
+  color: #fff;
+}
+
+.lr-ico {
+  font-size: 20px;
+  line-height: 1;
+}
+
+/* Push page content to the right of rail */
+.with-rail {
+  padding-left: 88px; /* rail width + breathing room */
+}
+
+/* Small screens: keep rail but shrink content padding */
+@media (max-width: 640px) {
+  .with-rail { padding-left: 76px; }
+}

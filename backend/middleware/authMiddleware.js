@@ -1,31 +1,27 @@
+// backend/middleware/authMiddleware.js
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
-// Middleware to verify token and attach user
-const protect = async (req, res, next) => {
-  const authHeader = req.headers.authorization;
-
-  if (authHeader && authHeader.startsWith('Bearer')) {
-    try {
-      const token = authHeader.split(' ')[1];
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      req.user = await User.findById(decoded.id).select('-password');
-      next();
-    } catch (err) {
-      res.status(401).json({ message: 'Invalid or expired token' });
+module.exports = async function protect(req, res, next) {
+  try {
+    const auth = req.headers.authorization || '';
+    if (!auth.startsWith('Bearer ')) {
+      return res.status(401).json({ message: 'No token provided' });
     }
-  } else {
-    res.status(401).json({ message: 'No token provided' });
-  }
-};
+    const token = auth.split(' ')[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-// Middleware to check if user is Admin
-const isAdmin = (req, res, next) => {
-  if (req.user && req.user.role === 'Admin') {
+    const user = await User.findById(decoded.id).select('-password');
+    if (!user) return res.status(401).json({ message: 'User not found' });
+
+    // 🔒 Block banned users everywhere
+    if (user.status === 'banned') {
+      return res.status(403).json({ message: 'You are banned. Contact support.' });
+    }
+
+    req.user = user;
     next();
-  } else {
-    res.status(403).json({ message: 'Access denied. Admins only.' });
+  } catch (e) {
+    return res.status(401).json({ message: 'Invalid or expired token' });
   }
 };
-
-module.exports = { protect, isAdmin };

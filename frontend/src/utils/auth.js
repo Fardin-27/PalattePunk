@@ -1,13 +1,16 @@
+// ✅ src/utils/auth.js
 import { jwtDecode } from 'jwt-decode';
 
-// ✅ Save JWT token to localStorage
+const TOKEN_KEY = 'token';
+
+// Save JWT token to localStorage
 export const saveToken = (token) => {
-  localStorage.setItem('token', token);
+  localStorage.setItem(TOKEN_KEY, token);
 };
 
-// ✅ Decode the stored token and return user info
+// Decode the stored token and return user info
 export const decodeToken = () => {
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem(TOKEN_KEY);
   if (!token) return null;
 
   try {
@@ -18,12 +21,12 @@ export const decodeToken = () => {
   }
 };
 
-// ✅ Get just the token
+// Get just the token
 export const getToken = () => {
-  return localStorage.getItem('token');
+  return localStorage.getItem(TOKEN_KEY);
 };
 
-// ✅ Remove token (logout)
-export const logout = () => {
-  localStorage.removeItem('token');
+// Remove token (logout)
+export const clearToken = () => {
+  localStorage.removeItem(TOKEN_KEY);
 };
