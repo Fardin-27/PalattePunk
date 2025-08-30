@@ -1,0 +1,105 @@
+/* src/pages/ManageArtworks.css */
+
+/* page wrapper */
+.adm-wrap {
+  padding: 16px;
+}
+
+/* header */
+.adm-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.adm-head h2 {
+  margin: 0;
+}
+.adm-controls select {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 8px 10px;
+  background: #fff;
+}
+
+/* shared button styles (match your theme) */
+.btn {
+  border: none;
+  border-radius: 999px;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, opacity 0.2s ease;
+}
+.btn.small { padding: 6px 10px; font-size: 12px; }
+.btn.danger { background: #b91c1c; color: #fff; }
+.btn { background: #2563eb; color: #fff; }
+
+/* messages */
+.note { color: #333; }
+.error { color: #b00020; }
+.muted { color: #777; }
+
+/* --- Masonry grid (like ArtFeed) --- */
+.grid-masonry {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  grid-auto-rows: 8px;     /* keep in sync if you compute spans in JS */
+  gap: 16px;
+}
+
+/* card */
+.pin {
+  position: relative;
+  break-inside: avoid;
+}
+
+.pin-inner {
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+  transition: transform 0.12s ease;
+}
+.pin-inner:hover { transform: translateY(-2px); }
+
+.pin-img, .img-placeholder {
+  width: 100%;
+  height: auto;
+  display: block;
+  cursor: pointer;
+}
+
+/* overlay actions (top-right) */
+.pin-actions {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  gap: 6px;
+}
+
+/* meta */
+.pin-meta {
+  padding: 10px 12px 12px;
+  cursor: pointer;
+}
+.pin-title {
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.pin-sub {
+  color: #555;
+  font-size: 13px;
+}
+
+/* placeholder */
+.img-placeholder {
+  background: #f3f4f6;
+  color: #888;
+  height: 240px;
+  display: grid;
+  place-items: center;
+}

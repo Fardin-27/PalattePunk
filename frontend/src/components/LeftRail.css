@@ -1,67 +1,74 @@
-/* ✅ Pinterest-like vertical icon bar */
+/* ✅ Slim icons-only rail with pinned logout; collapsible admin handled in JS */
+:root {
+  --rail-width: 72px;     /* keep it slim; also used by your main layout */
+  --item-size: 48px;
+  --icon-size: 22px;
+  --radius: 14px;
+  --pad: 8px;
+}
+
 .left-rail {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 88px;
+  top: 0; left: 0;
+  width: var(--rail-width);
   height: 100vh;
-  border-right: 1px solid #eee;
-  background: #fff;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  background: #fff;
+  border-right: 1px solid #eee;
   z-index: 50;
 }
 
-.lr-top, .lr-bottom {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 10px 0;
-  gap: 6px;
-}
-
+/* logo */
 .lr-logo {
-  width: 48px;
-  height: 48px;
-  margin: 6px 0 10px;
-  border: none;
-  border-radius: 12px;
-  font-size: 22px;
-  cursor: pointer;
-  background: #f6f6f6;
-}
-.lr-logo:hover { background: #efefef; }
-
-.lr-item {
-  width: 48px;
-  height: 48px;
-  border: none;
-  border-radius: 12px;
-  background: transparent;
-  cursor: pointer;
-  transition: background .15s ease, transform .1s ease;
+  width: 80%;
+  height: var(--item-size);
   display: grid;
   place-items: center;
+  font-size: 22px;
+  border: none;
+  background: #fff;
+  border-radius: var(--radius);
+  cursor: pointer;
+  margin: var(--pad);
 }
-.lr-item:hover { background: #f6f6f6; transform: translateY(-1px); }
+.lr-logo:hover { background: #fafafa; }
 
-.lr-item.active {
-  background: #111;
-  color: #fff;
-}
-
-.lr-ico {
-  font-size: 20px;
-  line-height: 1;
-}
-
-/* Push page content to the right of rail */
-.with-rail {
-  padding-left: 88px; /* rail width + breathing room */
+/* nav icons */
+.lr-nav {
+  padding: 0 var(--pad);
+  flex: 1 1 auto;  /* grows to near bottom; no forced scroll unless necessary */
+  overflow: hidden; /* no scrollbar by default */
 }
 
-/* Small screens: keep rail but shrink content padding */
-@media (max-width: 640px) {
-  .with-rail { padding-left: 76px; }
+.lr-item {
+  width: 100%;
+  height: var(--item-size);
+  display: grid;
+  place-items: center;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius);
+  cursor: pointer;
+  margin-bottom: 6px;
+}
+.lr-item:hover { background: #f7f7f7; }
+.lr-item.active { background: #f0f0f0; }
+
+.lr-ico { font-size: var(--icon-size); line-height: 1; }
+.lr-label { display: none; } /* icons-only */
+
+/* pinned bottom */
+.lr-bottom {
+  border-top: 1px solid #f0f0f0;
+  padding: var(--pad);
+  background: #fff;
+}
+
+/* content offset (ensure your main/app layout uses this) */
+.app-content.with-rail,
+main.with-rail {
+  margin-left: var(--rail-width);
+  width: calc(100vw - var(--rail-width));
+  max-width: none;
 }

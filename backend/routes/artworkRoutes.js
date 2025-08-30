@@ -3,22 +3,33 @@ const express = require('express');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+
 const Artwork = require('../models/Artwork');
+const Feedback = require('../models/Feedback'); // make sure this model exists
 const protect = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
-/* ---------------------------------------
-   0) Ensure uploads directory exists
----------------------------------------- */
-const uploadsDir = path.join(__dirname, '..', 'uploads');
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir);
+/* ---------------------------------------------------
+   Optional Notification helper (safe if model missing)
+--------------------------------------------------- */
+let Notification = null;
+try { Notification = require('../models/Notification'); } catch (_) {}
+async function notify(userId, payload) {
+  if (!Notification) return;
+  try { await Notification.create({ user: userId, ...payload }); }
+  catch (e) { console.error('Notify error:', e.message); }
 }
 
-/* ---------------------------------------
-   1) Multer storage for images
----------------------------------------- */
+/* ---------------------------------------------------
+   Ensure uploads dir exists
+--------------------------------------------------- */
+const uploadsDir = path.join(__dirname, '..', 'uploads');
+if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir);
+
+/* ---------------------------------------------------
+   Multer storage for image uploads
+--------------------------------------------------- */
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, uploadsDir),
   filename: (req, file, cb) => {
@@ -28,41 +39,43 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-/* ---------------------------------------
-   2) POST /api/artworks
-   Create a new artwork (Artist/Admin only)
-   Body (multipart/form-data):
-     - image (file)
-     - title (string, required)
-     - description (string, optional)
-     - tags (comma-separated string, optional)
-     - price (number, optional)
----------------------------------------- */
+/* ---------------------------------------------------
+   POST /api/artworks
+   Create artwork (Artist/Admin only)
+   multipart/form-data: image, title, description, tags, price
+--------------------------------------------------- */
 router.post('/', protect, upload.single('image'), async (req, res) => {
   try {
     if (req.user.role !== 'Artist' && req.user.role !== 'Admin') {
       return res.status(403).json({ message: 'Only artists can post.' });
     }
-    if (!req.file) {
-      return res.status(400).json({ message: 'Image is required' });
-    }
-    const { title, description = '', tags = '', price } = req.body;
-    if (!title || !title.trim()) {
-      return res.status(400).json({ message: 'Title is required' });
-    }
+    if (!req.file) return res.status(400).json({ message: 'Image is required' });
 
-    const tagList = tags
-      ? tags.split(',').map(t => t.trim()).filter(Boolean)
-      : [];
+    const {
+      title,
+      description = '',
+      tags = '',
+      price = 0
+    } = req.body;
 
     const art = await Artwork.create({
       author: req.user._id,
-      title: title.trim(),
-      description: description.trim(),
+      title,
+      description,
       imageUrl: `/uploads/${req.file.filename}`,
-      tags: tagList,
-      status: 'published',
-      ...(price !== undefined && price !== '' ? { price: Number(price) } : {})
+      tags: tags ? tags.split(',').map(t => t.trim()).filter(Boolean) : [],
+      price: Number(price) || 0,
+      status: 'published'
+    });
+
+    // 🔔 notify author about successful post (include title/body for your UI)
+    await notify(req.user._id, {
+      type: 'art:posted',
+      title: 'Artwork posted',
+      body: `${art.title || 'Your artwork'} is now live.`,
+      isRead: false,
+      data: { artworkId: art._id, title: art.title },
+      actor: req.user._id
     });
 
     res.status(201).json({ message: 'Artwork posted!', artwork: art });
@@ -72,79 +85,16 @@ router.post('/', protect, upload.single('image'), async (req, res) => {
   }
 });
 
-/* ---------------------------------------
-   3) GET /api/artworks
-   List artworks (not deleted), newest first.
-   Optional query filters (used by Explore):
-     - q: string (search title/description)
-     - title: string (regex i)
-     - description: string (regex i)
-     - artist: string (filter by populated author.name, done in-memory)
-     - tags: comma-separated (OR match)
-     - minPrice, maxPrice: numbers
-     - sort: 'recent' | 'oldest'
----------------------------------------- */
+/* ---------------------------------------------------
+   GET /api/artworks
+   Public feed: only published (and not hidden/sold)
+--------------------------------------------------- */
 router.get('/', async (req, res) => {
   try {
-    const {
-      q,
-      title,
-      description,
-      artist,
-      tags,
-      minPrice,
-      maxPrice,
-      sort
-    } = req.query;
-
-    // Base filter: everything except deleted
-    const filter = { status: { $ne: 'deleted' } };
-
-    // Server-side regex filters (cheap fields)
-    if (title) {
-      filter.title = { $regex: new RegExp(title, 'i') };
-    }
-    if (description) {
-      filter.description = { $regex: new RegExp(description, 'i') };
-    }
-    if (tags) {
-      const tagList = tags.split(',').map(t => t.trim()).filter(Boolean);
-      if (tagList.length) {
-        filter.tags = { $in: tagList }; // OR match on any tag
-      }
-    }
-    if (minPrice !== undefined) {
-      filter.price = { ...(filter.price || {}), $gte: Number(minPrice) };
-    }
-    if (maxPrice !== undefined) {
-      filter.price = { ...(filter.price || {}), $lte: Number(maxPrice) };
-    }
-    if (q) {
-      // Basic q: OR over title/description (server side)
-      const regex = new RegExp(q, 'i');
-      filter.$or = [{ title: regex }, { description: regex }];
-    }
-
-    // Fetch
-    let items = await Artwork.find(filter)
+    const items = await Artwork.find({ status: 'published' })
       .populate('author', 'name role')
-      .sort({ createdAt: -1 });
-
-    // Artist name filter (requires populated author; do in-memory)
-    if (artist) {
-      const a = artist.toString().toLowerCase();
-      items = items.filter(it =>
-        (it.author?.name || '').toLowerCase().includes(a)
-      );
-    }
-
-    // Sort switch
-    if (sort === 'oldest') {
-      items.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-    } else {
-      items.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-    }
-
+      .sort({ createdAt: -1 })
+      .lean();
     res.json(items);
   } catch (e) {
     console.error('GET /api/artworks error:', e);
@@ -152,31 +102,35 @@ router.get('/', async (req, res) => {
   }
 });
 
-/* ---------------------------------------
-   4) GET /api/artworks/:id
-   Return one artwork (with author + comments.user populated)
----------------------------------------- */
+/* ---------------------------------------------------
+   GET /api/artworks/:id
+   Read one artwork + feedbacks
+   Returns a single object with artwork fields PLUS "feedbacks" array
+--------------------------------------------------- */
 router.get('/:id', async (req, res) => {
   try {
     const art = await Artwork.findById(req.params.id)
       .populate('author', 'name role')
-      .populate('comments.user', 'name role');
+      .lean();
+    if (!art) return res.status(404).json({ message: 'Artwork not found' });
 
-    if (!art || art.status === 'deleted') {
-      return res.status(404).json({ message: 'Artwork not found' });
-    }
-    res.json(art);
+    const feedbacks = await Feedback.find({ artwork: art._id })
+      .populate('author', 'name')
+      .sort({ createdAt: -1 })
+      .lean();
+
+    // Merge feedbacks into the response (keeps your existing frontend shape simple)
+    res.json({ ...art, feedbacks });
   } catch (e) {
     console.error('GET /api/artworks/:id error:', e);
     res.status(500).json({ message: 'Server error' });
   }
 });
 
-/* ---------------------------------------
-   5) POST /api/artworks/:id/feedback
-   Add a feedback comment (logged-in users)
-   Body: { text: string }
----------------------------------------- */
+/* ---------------------------------------------------
+   POST /api/artworks/:id/feedback
+   Add feedback (any logged-in user)
+--------------------------------------------------- */
 router.post('/:id/feedback', protect, async (req, res) => {
   try {
     const { text } = req.body;
@@ -185,16 +139,31 @@ router.post('/:id/feedback', protect, async (req, res) => {
     }
 
     const art = await Artwork.findById(req.params.id);
-    if (!art || art.status === 'deleted') {
-      return res.status(404).json({ message: 'Artwork not found' });
+    if (!art) return res.status(404).json({ message: 'Artwork not found' });
+
+    const fb = await Feedback.create({
+      artwork: art._id,
+      author: req.user._id,
+      text: text.trim()
+    });
+
+    // 🔔 notify artwork author (avoid notifying yourself)
+    if (String(art.author) !== String(req.user._id)) {
+      await notify(art.author, {
+        type: 'feedback:new',
+        title: 'New feedback',
+        body: 'Someone commented on your artwork.',
+        isRead: false,
+        data: { artworkId: art._id, feedbackId: fb._id },
+        actor: req.user._id
+      });
     }
 
-    art.comments.push({ user: req.user._id, text: text.trim() });
-    await art.save();
+    const populated = await Feedback.findById(fb._id)
+      .populate('author', 'name')
+      .lean();
 
-    // return populated comments
-    const populated = await art.populate('comments.user', 'name role');
-    res.status(201).json({ message: 'Feedback added', artwork: populated });
+    res.status(201).json({ message: 'Feedback added', feedback: populated });
   } catch (e) {
     console.error('POST /api/artworks/:id/feedback error:', e);
     res.status(500).json({ message: 'Server error' });

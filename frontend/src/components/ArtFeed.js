@@ -1,4 +1,4 @@
-// ✅ src/components/ArtFeed.js  (CSS Grid masonry: no right gap)
+// src/components/ArtFeed.js
 import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
@@ -18,17 +18,15 @@ export default function ArtFeed({ mode = 'simple', q = '', filters = {} }) {
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState('');
 
-  // grid masonry vars
   const gridRef = useRef(null);
-  const ROW = 8;   // grid-auto-rows height (px). Keep in sync with CSS.
-  const GAP = 16;  // gap (px). Keep in sync with CSS.
+  const ROW = 8;
+  const GAP = 16;
 
   const srcOf = (raw) =>
     typeof raw === 'string' && raw.startsWith('/uploads')
       ? `http://localhost:5000${raw}`
       : raw || '';
 
-  // fetch artworks
   useEffect(() => {
     let live = true;
     (async () => {
@@ -37,17 +35,8 @@ export default function ArtFeed({ mode = 'simple', q = '', filters = {} }) {
         setErr('');
         let res = await api.get('/artworks');
         let data = Array.isArray(res.data) ? res.data : [];
-        if (!data.length) {
-          try {
-            const r2 = await fetch('http://localhost:5000/api/artworks');
-            if (r2.ok) {
-              const j = await r2.json();
-              if (Array.isArray(j)) data = j;
-            }
-          } catch {}
-        }
         if (!live) return;
-        setItems(data.length ? data : []);
+        setItems(data);
       } catch (e) {
         if (!live) return;
         console.error('GET /artworks failed:', e);
@@ -62,7 +51,6 @@ export default function ArtFeed({ mode = 'simple', q = '', filters = {} }) {
 
   const filtered = useMemo(() => {
     let out = items.slice();
-
     if (mode === 'simple' && q.trim()) {
       const qq = toStr(q);
       out = out.filter((it) =>
@@ -71,7 +59,6 @@ export default function ArtFeed({ mode = 'simple', q = '', filters = {} }) {
         toStr(it?.author?.name).includes(qq)
       );
     }
-
     if (mode === 'advanced' && filters) {
       const f = filters;
       if (f.title) out = out.filter((it) => toStr(it.title).includes(toStr(f.title)));
@@ -81,7 +68,7 @@ export default function ArtFeed({ mode = 'simple', q = '', filters = {} }) {
         const want = f.tags.map(toStr);
         out = out.filter((it) => {
           const got = (it.tags || []).map(toStr);
-          return want.some((t) => got.includes(t)); // OR match
+          return want.some((t) => got.includes(t));
         });
       }
       if (typeof f.minPrice === 'number') out = out.filter((it) => typeof it.price === 'number' && it.price >= f.minPrice);
@@ -89,11 +76,9 @@ export default function ArtFeed({ mode = 'simple', q = '', filters = {} }) {
       if (f.sort === 'oldest') out.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
       else out.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     }
-
     return out;
   }, [items, mode, q, filters]);
 
-  // measure & set grid row spans to achieve masonry
   const measureAll = useCallback(() => {
     const grid = gridRef.current;
     if (!grid) return;
@@ -115,7 +100,6 @@ export default function ArtFeed({ mode = 'simple', q = '', filters = {} }) {
   }, [filtered, measureAll]);
 
   const onImgLoad = () => measureAll();
-
   const showEmpty = !loading && !err && filtered.length === 0;
 
   return (
@@ -132,19 +116,18 @@ export default function ArtFeed({ mode = 'simple', q = '', filters = {} }) {
 
       <div className="grid-masonry" ref={gridRef}>
         {filtered.map((art, i) => {
-          const hasId = Boolean(art._id);       // 👈 only navigate if real DB id
+          const hasId = Boolean(art._id);
           const id = art._id || String(i);
           const img = srcOf(art.imageUrl || art.image);
           const title = art.title || 'Untitled';
           const author = art?.author?.name || 'Unknown';
-
           return (
             <article
               key={id}
               className="pin"
-              onClick={() => hasId && nav(`/art/${id}`)}   // 👈 guard nav
+              onClick={() => hasId && nav(`/art/${id}`)}
               role="button"
-              style={{ cursor: hasId ? 'pointer' : 'default' }} // 👈 cursor
+              style={{ cursor: hasId ? 'pointer' : 'default' }}
             >
               <div className="pin-inner">
                 {img ? (

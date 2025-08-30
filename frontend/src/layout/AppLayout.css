@@ -1,7 +1,7 @@
 /* ✅ Global shell/layout rules. Makes content fill full width beside the rail. */
 :root {
   /* Keep this in sync with LeftRail.css width */
-  --rail-width: 88px;
+  --rail-width: 72px;
 }
 
 html, body, #root {

@@ -1,94 +1,150 @@
-.mu-toolbar {
-  display: flex;
-  gap: 8px;
-  margin: 8px 0 12px;
+/* ✅ src/pages/ManageUsers.css */
+
+.mu-wrap {
+  padding: 16px;
 }
-.mu-toolbar input, .mu-toolbar select {
-  padding: 8px 10px;
-  border: 1px solid #ddd;
-  border-radius: 10px;
+
+.mu-title {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 12px;
 }
-.mu-toolbar button {
-  padding: 8px 12px;
-  border: 1px solid #ddd;
-  border-radius: 10px;
-  background: #f7f7f7;
-  cursor: pointer;
+
+.mu-card {
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}
+
+.mu-section-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.mu-muted {
+  color: #666;
+}
+
+.mu-error {
+  color: #d93025;
+  font-weight: 600;
 }
 
 .mu-table {
-  border: 1px solid #eee;
-  border-radius: 12px;
-  overflow: hidden;
+  width: 100%;
+  border-collapse: collapse;
 }
-.mu-row, .mu-head {
-  display: grid;
-  grid-template-columns: 1.4fr 1.6fr .6fr .6fr 1fr;
-  gap: 12px;
-  align-items: center;
-  padding: 10px 12px;
+
+.mu-table th,
+.mu-table td {
+  border-bottom: 1px solid #f0f0f0;
+  padding: 10px 8px;
+  vertical-align: middle;
 }
-.mu-head {
+
+.mu-table thead th {
+  text-align: left;
+  font-weight: 700;
+  color: #333;
   background: #fafafa;
-  font-weight: 700;
-  border-bottom: 1px solid #eee;
-}
-.mu-row:not(.mu-head) { border-top: 1px solid #f3f3f3; }
-
-.mu-name {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.mu-avatar {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  display: grid;
-  place-items: center;
-  background: #efefef;
-  font-weight: 700;
-}
-.bold { font-weight: 700; }
-.muted { color: #666; font-size: 12px; }
-.id { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
-
-.mu-actions {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  justify-content: flex-end;
-}
-.mu-actions .split {
-  display: inline-flex;
-  gap: 6px;
-}
-.mu-actions button {
-  border: 1px solid #ddd;
-  background: #fff;
-  border-radius: 10px;
-  padding: 6px 10px;
-  cursor: pointer;
-}
-.mu-actions .warn {
-  border-color: #e57373;
-  color: #b71c1c;
-  background: #fff5f5;
 }
 
-.pill {
-  padding: 2px 8px;
+.mu-user .name {
+  font-weight: 600;
+  margin-right: 6px;
+}
+
+.mu-user .email {
+  color: #6b7280;
+  font-size: 0.92rem;
+}
+
+.mu-actions .btn + .btn {
+  margin-left: 8px;
+}
+
+/* Badges */
+.mu-badge {
+  display: inline-block;
+  padding: 3px 8px;
   border-radius: 999px;
   font-size: 12px;
-  border: 1px solid #eee;
-  background: #fafafa;
+  font-weight: 600;
+  color: #fff;
 }
-.r-admin { background: #111; color: #fff; }
-.r-artist { background: #ffe0f0; }
-.r-buyer { background: #e0f2ff; }
 
-.s-active { background: #e8f5e9; }
-.s-banned { background: #ffebee; color: #b71c1c; }
+.mu-badge-admin { background: #7c3aed; }
+.mu-badge-artist { background: #0ea5e9; }
+.mu-badge-buyer  { background: #10b981; }
+.mu-badge-info   { background: #2563eb; }
 
-.mu-error { color: #b71c1c; font-weight: 600; }
-.mu-empty { padding: 16px; color: #666; }
+/* Status pills */
+.mu-status {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.mu-status-active  { background: #ecfdf5; color: #065f46; }
+.mu-status-banned  { background: #fef2f2; color: #991b1b; }
+
+/* Buttons — make sure text is visible (the issue you saw) */
+.btn {
+  appearance: none;
+  border: none;
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform .06s ease, opacity .12s ease;
+  line-height: 1;
+}
+
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.btn-primary {
+  background: #2563eb;
+  color: #fff;               /* 🔧 ensure visible label */
+}
+
+.btn-danger {
+  background: #b91c1c;
+  color: #fff;               /* 🔧 ensure visible label */
+}
+
+.btn-warning {
+  background: #f59e0b;
+  color: #1f2937;            /* dark text over amber */
+}
+
+.btn-muted {
+  background: #e5e7eb;
+  color: #111827;
+}
+
+/* Reason cell wraps nicely */
+.mu-reason {
+  max-width: 420px;
+  white-space: normal;
+  word-break: break-word;
+}
+
+/* Make actions column not too wide on smaller screens */
+@media (max-width: 900px) {
+  .mu-actions {
+    white-space: nowrap;
+  }
+}

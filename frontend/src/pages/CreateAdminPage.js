@@ -1,6 +1,6 @@
 // src/pages/CreateAdminPage.js
 import React, { useState } from 'react';
-import axios from 'axios';
+import api from '../utils/api';              // ⬅️ use the authorized client
 import './CreateAdminPage.css';
 
 export default function CreateAdminPage() {
@@ -17,46 +17,53 @@ export default function CreateAdminPage() {
     setSuccess('');
     setError('');
     try {
-      const res = await axios.post('http://localhost:5000/api/admin/create', form);
+      // ⬅️ use api.post so Authorization header is sent
+      const res = await api.post('/admin/create', form);
       setSuccess(res.data.message);
       setForm({ name: '', email: '', password: '' });
     } catch (err) {
-      setError(err.response?.data?.message || 'Something went wrong');
+      const msg =
+        err.response?.data?.message ||
+        (err.response?.status === 401 ? 'Not authorized' :
+         err.response?.status === 403 ? 'Forbidden' : 'Something went wrong');
+      setError(msg);
     }
   };
 
   return (
-    <>
-      <h2 style={{ marginBottom: 12 }}>Create Admin</h2>
-      <form onSubmit={handleSubmit} className="create-admin-form" style={{ maxWidth: 420 }}>
-        <input
-          type="text"
-          name="name"
-          placeholder="Admin Name"
-          value={form.name}
-          onChange={handleChange}
-          required
-        />
-        <input
-          type="email"
-          name="email"
-          placeholder="Admin Email"
-          value={form.email}
-          onChange={handleChange}
-          required
-        />
-        <input
-          type="password"
-          name="password"
-          placeholder="Password"
-          value={form.password}
-          onChange={handleChange}
-          required
-        />
-        <button type="submit">Create Admin</button>
-      </form>
-      {success && <p className="success-msg">{success}</p>}
-      {error && <p className="error-msg">{error}</p>}
-    </>
+    <div className="create-admin-wrapper">
+      <div className="create-admin-card">
+        <h2 style={{ marginBottom: 12 }}>Create Admin</h2>
+        <form onSubmit={handleSubmit} className="create-admin-form">
+          <input
+            type="text"
+            name="name"
+            placeholder="Admin Name"
+            value={form.name}
+            onChange={handleChange}
+            required
+          />
+          <input
+            type="email"
+            name="email"
+            placeholder="Admin Email"
+            value={form.email}
+            onChange={handleChange}
+            required
+          />
+          <input
+            type="password"
+            name="password"
+            placeholder="Password"
+            value={form.password}
+            onChange={handleChange}
+            required
+          />
+          <button type="submit">Create Admin</button>
+        </form>
+        {success && <p className="success-msg">{success}</p>}
+        {error && <p className="error-msg">{error}</p>}
+      </div>
+    </div>
   );
 }

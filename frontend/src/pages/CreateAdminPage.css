@@ -1,42 +1,55 @@
-/* ✅ src/pages/CreateAdminPage.css */
 .create-admin-wrapper {
-  max-width: 400px;
-  margin: 80px auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh; /* full viewport height */
+  background: #f9fafb; /* light background for contrast (optional) */
+}
+
+.create-admin-card {
+  background: #fff;
   padding: 30px;
-  border: 1px solid #ddd;
   border-radius: 12px;
-  background-color: #fff;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  width: 100%;
+  max-width: 400px;
   text-align: center;
 }
 
+.create-admin-form {
+  display: grid;
+  gap: 12px;
+  margin-top: 12px;
+}
+
 .create-admin-form input {
-  display: block;
-  width: 100%;
-  padding: 10px 14px;
-  margin-bottom: 16px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  font-size: 16px;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
 }
 
 .create-admin-form button {
-  width: 100%;
-  padding: 10px;
-  background-color: crimson;
+  background: #dc2626;
   color: #fff;
+  padding: 10px 16px;
   border: none;
-  border-radius: 8px;
-  font-size: 16px;
+  border-radius: 6px;
   cursor: pointer;
+  font-weight: 600;
+}
+
+.create-admin-form button:hover {
+  background: #b91c1c;
 }
 
 .success-msg {
-  color: green;
-  margin-top: 10px;
+  margin-top: 12px;
+  color: #166534;
+  font-weight: 500;
 }
 
 .error-msg {
-  color: red;
-  margin-top: 10px;
+  margin-top: 12px;
+  color: #991b1b;
+  font-weight: 500;
 }

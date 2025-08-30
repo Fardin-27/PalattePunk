@@ -1,12 +1,5 @@
+// backend/models/Artwork.js
 const mongoose = require('mongoose');
-
-const CommentSchema = new mongoose.Schema(
-  {
-    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    text: { type: String, required: true, trim: true },
-  },
-  { timestamps: true }
-);
 
 const ArtworkSchema = new mongoose.Schema(
   {
@@ -15,9 +8,11 @@ const ArtworkSchema = new mongoose.Schema(
     description: { type: String, default: '' },
     imageUrl: { type: String, required: true },
     tags: { type: [String], default: [] },
-    price: { type: Number }, // optional
-    status: { type: String, enum: ['published', 'draft', 'deleted'], default: 'published' },
-    comments: { type: [CommentSchema], default: [] }, // 👈 feedback lives here
+
+    // marketplace-related
+    price: { type: Number, default: 0 },                // 0 = not for sale
+    status: { type: String, enum: ['published', 'hidden', 'sold'], default: 'published' },
+    buyer: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null }, // <-- important
   },
   { timestamps: true }
 );

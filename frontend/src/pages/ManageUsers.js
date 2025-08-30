@@ -1,132 +1,234 @@
-// ✅ src/pages/ManageUsers.js
-import React, { useEffect, useMemo, useState, useCallback } from 'react';
+// src/pages/ManageUsers.js
+import React, { useEffect, useState } from 'react';
 import api from '../utils/api';
 import './ManageUsers.css';
 
 export default function ManageUsers() {
   const [users, setUsers] = useState([]);
-  const [q, setQ] = useState('');
-  const [role, setRole] = useState('All');
-  const [status, setStatus] = useState('All');
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState('');
 
-  const fetchUsers = useCallback(async () => {
+  const load = async () => {
     try {
       setLoading(true);
       setErr('');
-      const res = await api.get('/admin/users', {
-        params: {
-          q: q || undefined,
-          role: role !== 'All' ? role : undefined,
-          status: status !== 'All' ? status : undefined,
-        },
-      });
-      setUsers(res.data || []);
+      const res = await api.get('/admin/users');
+      setUsers(Array.isArray(res.data) ? res.data : []);
     } catch (e) {
-      setErr(e?.response?.data?.message || 'Failed to load users');
+      console.error('GET /admin/users failed', e);
+      setErr('Failed to load users');
     } finally {
       setLoading(false);
     }
-  }, [q, role, status]);
-
-  useEffect(() => { fetchUsers(); }, [fetchUsers]);
-
-  const confirmDo = async (msg, fn) => {
-    if (!window.confirm(msg)) return;
-    await fn();
-    fetchUsers();
   };
 
-  const banUser = (id) =>
-    confirmDo('Ban this user? They will be blocked from logging in.', async () => {
-      await api.patch(`/admin/users/${id}/ban`);
-    });
+  useEffect(() => {
+    load();
+  }, []);
 
-  const unbanUser = (id) =>
-    confirmDo('Unban this user?', async () => {
-      await api.patch(`/admin/users/${id}/unban`);
-    });
+  const setRole = async (id, role) => {
+    try {
+      await api.patch(`/admin/users/${id}/role`, { role });
+      await load();
+    } catch (e) {
+      console.error('PATCH role failed', e);
+      alert('Could not change role');
+    }
+  };
 
-  const setUserRole = (id, newRole) =>
-    confirmDo(`Change role to ${newRole}?`, async () => {
-      await api.patch(`/admin/users/${id}/role`, { role: newRole });
-    });
+  const makeAdmin = async (id) => {
+    try {
+      await api.patch(`/admin/users/${id}/make-admin`);
+      await load();
+    } catch (e) {
+      console.error('PATCH make-admin failed', e);
+      alert('Could not promote to admin');
+    }
+  };
 
-  const filtered = useMemo(() => users, [users]); // server-side filtering already
+  const toggleBan = async (id, status) => {
+    try {
+      if (status === 'banned') {
+        await api.patch(`/admin/users/${id}/unban`);
+      } else {
+        await api.patch(`/admin/users/${id}/ban`);
+      }
+      await load();
+    } catch (e) {
+      console.error('PATCH ban/unban failed', e);
+      alert('Could not update ban status');
+    }
+  };
+
+  // Only treat as a real, pending request if fields are present
+  const pendingRequests = users.filter((u) => {
+    const req = u.roleChangeRequest || null;
+    return (
+      req &&
+      req.status === 'pending' &&
+      req.requestedRole &&
+      req.requestedAt
+    );
+  });
 
   return (
-    <>
-      <h2 style={{ marginBottom: 12 }}>Manage Users</h2>
+    <div className="mu-wrap">
+      <h1 className="mu-title">Manage Users</h1>
 
-      <div className="mu-toolbar">
-        <input
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          placeholder="Search by name or email…"
-        />
-        <select value={role} onChange={(e) => setRole(e.target.value)}>
-          <option>All</option>
-          <option>Buyer</option>
-          <option>Artist</option>
-          <option>Admin</option>
-        </select>
-        <select value={status} onChange={(e) => setStatus(e.target.value)}>
-          <option>All</option>
-          <option>active</option>
-          <option>banned</option>
-        </select>
-        <button onClick={fetchUsers}>Refresh</button>
-      </div>
-
-      {loading && <p>Loading…</p>}
-      {err && <p className="mu-error">{err}</p>}
-
-      {!loading && !err && (
-        <div className="mu-table">
-          <div className="mu-head mu-row">
-            <div>Name</div>
-            <div>Email</div>
-            <div>Role</div>
-            <div>Status</div>
-            <div style={{ textAlign: 'right' }}>Actions</div>
-          </div>
-
-          {filtered.length === 0 && <div className="mu-empty">No users found.</div>}
-
-          {filtered.map((u) => (
-            <div key={u._id} className="mu-row">
-              <div className="mu-name">
-                <div className="mu-avatar">{(u.name || 'U')[0]}</div>
-                <div>
-                  <div className="bold">{u.name || '—'}</div>
-                  <div className="muted id">{u._id}</div>
-                </div>
-              </div>
-              <div>{u.email}</div>
-              <div>
-                <span className={`pill r-${(u.role || '').toLowerCase()}`}>{u.role}</span>
-              </div>
-              <div>
-                <span className={`pill s-${u.status}`}>{u.status}</span>
-              </div>
-              <div className="mu-actions">
-                {u.status !== 'banned' ? (
-                  <button className="warn" onClick={() => banUser(u._id)}>Ban</button>
-                ) : (
-                  <button onClick={() => unbanUser(u._id)}>Unban</button>
-                )}
-
-                <div className="split">
-                  <button onClick={() => setUserRole(u._id, 'Buyer')}>Buyer</button>
-                  <button onClick={() => setUserRole(u._id, 'Artist')}>Artist</button>
-                  <button onClick={() => setUserRole(u._id, 'Admin')}>Admin</button>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+      {/* Show the requests section ONLY when there are real pending requests */}
+      {pendingRequests.length > 0 && (
+        <section className="mu-card">
+          <h2 className="mu-section-title">Role Change Requests</h2>
+          <table className="mu-table">
+            <thead>
+              <tr>
+                <th>User</th>
+                <th>Current</th>
+                <th>Requested</th>
+                <th>Reason</th>
+                <th>Submitted</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {pendingRequests.map((u) => (
+                <tr key={`req-${u._id}`}>
+                  <td>
+                    <div className="mu-user">
+                      <span className="name">{u.name}</span>
+                      <span className="email">({u.email})</span>
+                    </div>
+                  </td>
+                  <td>{u.role}</td>
+                  <td className="mu-badge mu-badge-info">
+                    {u.roleChangeRequest?.requestedRole}
+                  </td>
+                  <td className="mu-reason">
+                    {u.roleChangeRequest?.reason || '—'}
+                  </td>
+                  <td>
+                    {u.roleChangeRequest?.requestedAt
+                      ? new Date(u.roleChangeRequest.requestedAt).toLocaleString()
+                      : '—'}
+                  </td>
+                  <td className="mu-actions">
+                    <button
+                      className="btn btn-primary"
+                      onClick={() => setRole(u._id, u.roleChangeRequest?.requestedRole)}
+                    >
+                      Approve
+                    </button>
+                    <button
+                      className="btn btn-muted"
+                      onClick={() => setRole(u._id, u.role)} // clears request server-side
+                    >
+                      Reject
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
       )}
-    </>
+
+      {/* All users table */}
+      <section className="mu-card">
+        <h2 className="mu-section-title">All Users</h2>
+
+        {loading ? (
+          <p className="mu-muted">Loading…</p>
+        ) : err ? (
+          <p className="mu-error">{err}</p>
+        ) : (
+          <table className="mu-table">
+            <thead>
+              <tr>
+                <th>User</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th>Role Tools</th>
+                <th>Moderation</th>
+              </tr>
+            </thead>
+            <tbody>
+              {users.map((u) => {
+                const isAdmin = u.role === 'Admin';
+                const isBanned = u.status === 'banned';
+
+                return (
+                  <tr key={u._id}>
+                    <td>
+                      <div className="mu-user">
+                        <span className="name">{u.name}</span>
+                        <span className="email">({u.email})</span>
+                      </div>
+                    </td>
+
+                    <td>
+                      <span
+                        className={
+                          u.role === 'Admin'
+                            ? 'mu-badge mu-badge-admin'
+                            : u.role === 'Artist'
+                            ? 'mu-badge mu-badge-artist'
+                            : 'mu-badge mu-badge-buyer'
+                        }
+                      >
+                        {u.role}
+                      </span>
+                    </td>
+
+                    <td>
+                      <span
+                        className={
+                          isBanned ? 'mu-status mu-status-banned' : 'mu-status mu-status-active'
+                        }
+                      >
+                        {u.status}
+                      </span>
+                    </td>
+
+                    <td className="mu-actions">
+                      <button
+                        className="btn btn-primary"
+                        disabled={isAdmin || u.role === 'Buyer'}
+                        onClick={() => setRole(u._id, 'Buyer')}
+                      >
+                        Set Buyer
+                      </button>
+                      <button
+                        className="btn btn-primary"
+                        disabled={isAdmin || u.role === 'Artist'}
+                        onClick={() => setRole(u._id, 'Artist')}
+                      >
+                        Set Artist
+                      </button>
+                    </td>
+
+                    <td className="mu-actions">
+                      <button
+                        className="btn btn-danger"
+                        disabled={isAdmin}
+                        onClick={() => makeAdmin(u._id)}
+                      >
+                        Make Admin
+                      </button>
+
+                      <button
+                        className="btn btn-warning"
+                        onClick={() => toggleBan(u._id, u.status)}
+                      >
+                        {isBanned ? 'Unban' : 'Ban'}
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        )}
+      </section>
+    </div>
   );
 }

@@ -1,0 +1,79 @@
+.profile-page { max-width: 1000px; margin: 0 auto; padding: 16px; }
+.profile-header { display:flex; gap:16px; align-items:center; margin-bottom:12px; }
+.avatar-wrap { display:flex; flex-direction:column; gap:8px; align-items:center; }
+.avatar-wrap img, .avatar-ph { width:84px; height:84px; border-radius:50%; background:#f3f3f3; display:grid; place-items:center; object-fit:cover; }
+.avatar-ph { font-size:36px; }
+.meta-line { color:#333; }
+
+.avatar-actions { display:flex; flex-direction:column; gap:6px; align-items:center; }
+.loader-inline { color:#666; font-size:14px; }
+
+.card { background:#fff; border:1px solid #eee; border-radius:12px; padding:14px; margin-top:12px; }
+.form-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px 16px; }
+.form-grid label { display:grid; gap:6px; }
+.form-grid label.full { grid-column:1 / -1; }
+.form-grid input, .form-grid textarea, .form-grid select {
+  border:1px solid #ddd; padding:10px 12px; border-radius:8px; font-size:14px;
+}
+.actions { grid-column:1 / -1; display:flex; justify-content:flex-end; gap:8px; }
+
+/* 🔧 Buttons (you already had these; left intact, added minor improvements) */
+.btn {
+  border: none;
+  border-radius: 999px;
+  padding: 10px 14px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, opacity 0.2s ease;
+  display: inline-block;
+  text-align: center;
+}
+.btn.small { padding:8px 12px; font-size:13px; }
+.btn.primary { background:#2563eb; color:#fff; }
+.btn.danger  { background:#b91c1c; color:#fff; }
+.btn.success { background:#107c41; color:#fff; }
+.btn.muted   { background:#e5e7eb; color:#111; }
+.btn:disabled { background:#ddd; color:#666; cursor:not-allowed; opacity:.7; }
+
+.ok { color:#107c41; }
+.error { color:#b00020; }
+.muted { color:#777; font-size:13px; }
+
+/* Mini grid */
+.grid-mine {
+  display: grid;
+  gap: 12px;
+}
+.mini-card {
+  border: 1px solid #eee;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #fff;
+}
+.mini-card img {
+  width: 100%;
+  height: 140px;
+  object-fit: cover;
+  display: block;
+}
+.mini-meta {
+  padding: 8px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.mini-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111;
+}
+.mini-price {
+  font-size: 13px;
+  color: #444;
+}
+
+/* Link reset for mini cards */
+.link-card { text-decoration: none; color: inherit; }
+.link-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,.06); }

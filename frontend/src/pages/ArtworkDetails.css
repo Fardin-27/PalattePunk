@@ -1,146 +1,172 @@
-/* Wrapper */
-.art-details-wrap {
+/* src/pages/ArtworkDetails.css */
+
+/* Two-column layout:
+   - left column (art) is a bit wider
+   - right column (details/feedback) slightly narrower but roomier */
+.ad-wrap {
   width: 100%;
-  padding: 8px 12px 28px;
-  box-sizing: border-box;
-}
-
-/* Main layout */
-.art-details-card {
+  margin: 0;
   display: grid;
-  grid-template-columns: 1.25fr 1fr; /* big media on left */
-  gap: 18px;
+  grid-template-columns: minmax(520px, 1.25fr) 0.85fr; /* 👈 image gets a bit more, right uses rest */
+  column-gap: 32px;
+  padding: 12px 16px;
   align-items: start;
-  margin-bottom: 20px;
 }
 
-@media (max-width: 980px) {
-  .art-details-card { grid-template-columns: 1fr; }
+@media (max-width: 1200px) {
+  .ad-wrap {
+    grid-template-columns: 1fr;
+    padding-right: 12px;
+  }
 }
 
-/* Media (left) */
-.art-media img {
+/* LEFT: image column — nudge a little to the right */
+.ad-left {
+  min-width: 0;
+  padding-left: 10px;           /* 👈 small nudge to the right */
+}
+
+/* Plain image: no border, bg, or shadow */
+.ad-image {
+  display: block;
   width: 100%;
   height: auto;
-  border-radius: 16px;
-  border: 1px solid #eee;
-  box-shadow: 0 2px 6px rgba(0,0,0,.05);
-  background: #fff;
+  max-height: 72vh;             /* fits viewport */
+  object-fit: contain;
+
+  /* forcefully remove any inherited decoration */
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  outline: none !important;
 }
 
-/* Info (right) */
-.art-info {
+/* Only the placeholder has a subtle box */
+.ad-image-ph {
+  height: 60vh;
+  display: grid;
+  place-items: center;
+  color: #666;
+  background: #f5f5f5;
+  border-radius: 12px;
+}
+
+/* RIGHT: sticky stack with improved spacing */
+.ad-right {
+  position: sticky;
+  top: 12px;
+  display: grid;
+  gap: 16px;                    /* a bit more breathing room */
+}
+
+/* Cards (right side only) */
+.ad-card {
   background: #fff;
-  border: 1px solid #eee;
-  border-radius: 16px;
+  border: 1px solid #eef0f2;
+  border-radius: 14px;
   padding: 16px;
-  box-shadow: 0 2px 6px rgba(0,0,0,.05);
+  box-shadow: 0 2px 10px rgba(16, 24, 40, 0.04);
 }
 
-.brand {
+.ad-title {
+  font-size: 21px;              /* tiny polish */
   font-weight: 800;
-  color: crimson;
-  margin-bottom: 4px;
+  margin: 0 0 4px 0;
   letter-spacing: 0.2px;
 }
 
-.title {
-  margin: 0 0 6px;
-  font-size: 26px;
-  font-weight: 800;
-  line-height: 1.2;
+.ad-sub {
+  color: #475569;
+  margin-top: 4px;
+  font-size: 14px;
 }
 
-.byline { color: #555; margin-bottom: 10px; }
-.price { margin: 8px 0 12px; font-weight: 700; }
-
-.tags { margin-bottom: 10px; }
-.tag {
-  display: inline-block;
-  margin: 0 6px 6px 0;
-  padding: 4px 10px;
-  background: #f3f3f3;
+.ad-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+.ad-tags span {
+  background: #f1f5f9;
+  color: #0f172a;
+  padding: 4px 8px;
   border-radius: 999px;
   font-size: 12px;
+  font-weight: 600;
 }
 
-/* Description */
-.desc { margin: 10px 0 12px; line-height: 1.55; }
-
-/* Divider */
-.divider {
-  height: 1px;
-  background: #eee;
-  margin: 12px 0 10px;
+.ad-desc {
+  margin-top: 12px;
+  line-height: 1.55;
 }
 
-/* Feedback section */
-.feedback-sec h3 { margin: 8px 0 10px; }
+/* Feedback */
+.ad-h3 {
+  margin: 0 0 8px 0;
+  font-size: 16px;
+  font-weight: 700;
+}
 
-.feedback-form textarea {
+.ad-fb-form textarea {
   width: 100%;
-  border: 1px solid #ddd;
+  border: 1px solid #dfe3e8;
   border-radius: 12px;
   padding: 10px 12px;
   resize: vertical;
-  min-height: 90px;
-  outline: none;
-  background: #fff;
+  font-size: 14px;
+  min-height: 80px;
 }
-.feedback-form textarea:focus { border-color: #bbb; }
 
-.feedback-form button {
+.ad-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
   margin-top: 8px;
-  border: 1px solid #ddd;
-  border-radius: 12px;
-  background: #f7f7f7;
-  padding: 10px 14px;
-  cursor: pointer;
 }
 
-/* Comments list */
-.comments { list-style: none; padding: 0; margin: 12px 0 4px; }
-.comments li {
-  border: 1px solid #eee;
+/* Feedback list */
+.ad-fb-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+.ad-fb-item {
+  border: 1px solid #eef0f2;
   border-radius: 12px;
   padding: 10px 12px;
-  margin-bottom: 10px;
   background: #fff;
 }
-.c-head { display: flex; justify-content: space-between; font-size: 12px; color: #666; margin-bottom: 4px; }
-.c-author { font-weight: 700; color: #222; }
-.c-body { white-space: pre-wrap; }
-
-/* Related feed */
-.related-sec { margin-top: 18px; }
-.related-sec h3 { margin: 0 0 10px; }
-
-.related-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
-  gap: 14px;
+.ad-fb-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.ad-time {
+  color: #64748b;
+  font-size: 12px;
+}
+.ad-fb-text {
+  white-space: pre-wrap;
+  line-height: 1.5;
 }
 
-.rel-card {
-  border: 1px solid #eee;
-  border-radius: 14px;
-  overflow: hidden;
-  background: #fff;
-  box-shadow: 0 1px 2px rgba(0,0,0,.05);
-  transition: transform .12s ease, box-shadow .12s ease;
+/* Buttons */
+.btn {
+  border: none;
+  border-radius: 999px;
+  padding: 10px 14px;
+  font-size: 14px;
+  font-weight: 700;
   cursor: pointer;
+  transition: background .2s ease, opacity .2s ease;
 }
-.rel-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(0,0,0,.08);
-}
+.btn.primary { background:#2563eb; color:#fff; }
 
-.rel-card img { width: 100%; height: auto; display: block; }
-.rel-meta { padding: 8px 10px 10px; }
-.rel-title { font-weight: 700; font-size: 14px; margin-bottom: 4px; line-height: 1.3; }
-.rel-sub { color: #666; font-size: 12px; }
-
-/* Helpers */
-.muted { color: #777; font-size: 14px; }
-.error { color: #b71c1c; font-weight: 600; }
-.img-placeholder { width: 100%; padding: 60px 0; text-align: center; color: #666; background: #f7f7f7; }
+.muted { color: #777; }
+.error { color: #b00020; }

@@ -1,16 +1,16 @@
 // backend/routes/authRoutes.js
 const express = require('express');
-const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
-const protect = require('../middleware/authMiddleware'); // default export
+const protect = require('../middleware/authMiddleware');
+
+// optional notifier (safe if missing)
+let notify = null;
+try { ({ notify } = require('../utils/notifier')); } catch (_) {}
 
 const router = express.Router();
 
-/**
- * POST /api/auth/register
- * body: { name, email, password, role }  // role: "Buyer" | "Artist" (default Buyer)
- */
+/** POST /api/auth/register */
 router.post('/register', async (req, res) => {
   try {
     let { name = '', email = '', password = '', role = 'Buyer' } = req.body;
@@ -24,18 +24,12 @@ router.post('/register', async (req, res) => {
     }
 
     const exists = await User.findOne({ email });
-    if (exists) {
-      return res.status(409).json({ message: 'Email already registered' });
-    }
+    if (exists) return res.status(409).json({ message: 'Email already registered' });
 
-    const hashed = await bcrypt.hash(password, 10);
-    const user = await User.create({
-      name,
-      email,
-      password: hashed,
-      role,             // "Buyer" or "Artist"
-      status: 'active', // default state
-    });
+    // DO NOT hash here — User pre('save') hook handles hashing
+    const user = await User.create({ name, email, password, role, status: 'active' });
+
+    try { notify && notify(user._id, 'Welcome', 'Your account is ready.', 'info'); } catch {}
 
     return res.status(201).json({
       message: 'Registration successful. Please log in.',
@@ -47,10 +41,7 @@ router.post('/register', async (req, res) => {
   }
 });
 
-/**
- * POST /api/auth/login
- * body: { email, password }
- */
+/** POST /api/auth/login */
 router.post('/login', async (req, res) => {
   try {
     const email = String(req.body.email || '').trim().toLowerCase();
@@ -59,12 +50,14 @@ router.post('/login', async (req, res) => {
     const user = await User.findOne({ email });
     if (!user) return res.status(400).json({ message: 'Invalid credentials' });
 
-    // 🔒 Block banned accounts
-    if (user.status === 'banned') {
-      return res.status(403).json({ message: 'Your account is banned.' });
+    // 🚫 Block anything not active (deleted/banned) BEFORE comparing password
+    if (user.status !== 'active') {
+      return res.status(403).json({
+        message: user.status === 'banned' ? 'Your account is banned.' : 'Your account is deleted.'
+      });
     }
 
-    const ok = await bcrypt.compare(password, user.password);
+    const ok = await user.matchPassword(password); // bcrypt.compare in model
     if (!ok) return res.status(400).json({ message: 'Invalid credentials' });
 
     const token = jwt.sign(
@@ -72,6 +65,8 @@ router.post('/login', async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: '7d' }
     );
+
+    try { notify && notify(user._id, 'New login', 'You signed in successfully.', 'info'); } catch {}
 
     return res.json({
       token,
@@ -83,12 +78,8 @@ router.post('/login', async (req, res) => {
   }
 });
 
-/**
- * GET /api/auth/me
- * returns the current user (requires Authorization: Bearer <token>)
- */
+/** GET /api/auth/me */
 router.get('/me', protect, async (req, res) => {
-  // protect attaches req.user (without password)
   return res.json({
     user: {
       id: req.user._id,

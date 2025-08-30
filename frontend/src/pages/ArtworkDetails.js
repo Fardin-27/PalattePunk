@@ -1,214 +1,172 @@
-// ✅ src/pages/ArtworkDetails.js
-import React, { useEffect, useMemo, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+// src/pages/ArtworkDetails.js
+import React, { useEffect, useState, useMemo } from 'react';
+import { useParams } from 'react-router-dom';
 import api from '../utils/api';
-import { getToken, decodeToken } from '../utils/auth';
 import './ArtworkDetails.css';
+
+const imgSrc = (raw) =>
+  typeof raw === 'string' && raw.startsWith('/uploads')
+    ? `http://localhost:5000${raw}`
+    : raw || '';
 
 export default function ArtworkDetails() {
   const { id } = useParams();
-  const nav = useNavigate();
 
   const [art, setArt] = useState(null);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState('');
-  const [feedback, setFeedback] = useState('');
-  const [all, setAll] = useState([]); // for related feed below
 
-  const token = getToken();
-  const me = decodeToken(); // {id, role, ...} or null
+  const [fbText, setFbText] = useState('');
+  const [fbLoading, setFbLoading] = useState(false);
+  const [fbErr, setFbErr] = useState('');
 
-  const srcOf = (raw) =>
-    typeof raw === 'string' && raw.startsWith('/uploads')
-      ? `http://localhost:5000${raw}`
-      : raw || '';
-
-  const fetchOne = async () => {
-    setLoading(true);
-    setErr('');
-    try {
-      const res = await api.get(`/artworks/${id}`);
-      setArt(res.data);
-    } catch (e) {
-      console.error('GET /artworks/:id failed', e);
-      setErr('Could not load artwork.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchAll = async () => {
-    try {
-      const res = await api.get('/artworks');
-      setAll(Array.isArray(res.data) ? res.data : []);
-    } catch (e) {
-      console.error('GET /artworks failed for related feed', e);
-      setAll([]);
-    }
-  };
-
+  // load artwork
   useEffect(() => {
-    fetchOne();
-    fetchAll();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    let live = true;
+    (async () => {
+      setLoading(true);
+      setErr('');
+      try {
+        const res = await api.get(`/artworks/${id}`);
+        if (!live) return;
+        setArt(res.data);
+      } catch (e) {
+        if (!live) return;
+        setErr('Could not load artwork.');
+      } finally {
+        if (live) setLoading(false);
+      }
+    })();
+    return () => { live = false; };
   }, [id]);
 
-  const submitFeedback = async (e) => {
+  const onSendFeedback = async (e) => {
     e.preventDefault();
-    if (!feedback.trim()) return;
+    if (!fbText.trim()) return;
+    setFbLoading(true);
+    setFbErr('');
     try {
-      await api.post(
-        `/artworks/${id}/feedback`,
-        { text: feedback.trim() },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setFeedback('');
-      fetchOne(); // refresh comments
+      const res = await api.post(`/artworks/${id}/feedback`, { text: fbText.trim() });
+      const newFb = res.data?.feedback;
+      // append the new feedback so it shows immediately
+      if (newFb) {
+        setArt(prev => {
+          const prevList =
+            (Array.isArray(prev?.feedbacks) && prev.feedbacks) ||
+            (Array.isArray(prev?.comments) && prev.comments) ||
+            [];
+          const updated = [newFb, ...prevList];
+          // keep both keys in sync for compatibility with other code paths
+          return { ...prev, feedbacks: updated, comments: updated };
+        });
+      }
+      setFbText('');
     } catch (e) {
-      console.error('POST feedback failed', e);
-      alert(e?.response?.data?.message || 'Failed to add feedback');
+      setFbErr(e?.response?.data?.message || 'Failed to post feedback.');
+    } finally {
+      setFbLoading(false);
     }
   };
 
-  // Related: same artist first; exclude current; then fallback to others (limit ~12)
-  const related = useMemo(() => {
-    if (!art) return [];
-    const meId = art._id?.toString?.();
-    const authorName = (art?.author?.name || '').toLowerCase();
-    const sameArtist = all.filter(
-      (x) =>
-        x._id !== meId &&
-        (x?.author?.name || '').toLowerCase() === authorName
-    );
-    const others = all.filter(
-      (x) =>
-        x._id !== meId &&
-        (x?.author?.name || '').toLowerCase() !== authorName
-    );
-    return [...sameArtist, ...others].slice(0, 12);
-  }, [all, art]);
+  // normalize comments from either "feedbacks" (current API) or legacy "comments"
+  const comments = useMemo(() => {
+    const raw =
+      (Array.isArray(art?.feedbacks) && art.feedbacks) ||
+      (Array.isArray(art?.comments) && art.comments) ||
+      [];
+    return raw.map((f) => ({
+      _id: f._id,
+      // API populates 'author' — fall back to legacy 'user'
+      name: (f.author && f.author.name) || (f.user && f.user.name) || 'User',
+      text: f.text || f.content || '',
+      createdAt: f.createdAt,
+    }));
+  }, [art]);
 
-  if (loading) return <div className="art-details-wrap"><p>Loading…</p></div>;
-  if (err) return <div className="art-details-wrap"><p className="error">{err}</p></div>;
+  if (loading) return <div className="ad-wrap"><p className="muted">Loading…</p></div>;
+  if (err) return <div className="ad-wrap"><p className="error">{err}</p></div>;
   if (!art) return null;
 
-  const img = srcOf(art.imageUrl || art.image);
-  const authorName = art?.author?.name || 'Unknown artist';
+  const price =
+    typeof art.price === 'number' && art.price > 0 ? `$${art.price}` : null;
 
   return (
-    <div className="art-details-wrap">
-      <div className="art-details-card">
-        {/* Media (left) */}
-        <div className="art-media">
-          {img ? (
-            <img src={img} alt={art.title} />
-          ) : (
-            <div className="img-placeholder">No image</div>
-          )}
-        </div>
+    <div className="ad-wrap">
+      {/* LEFT: plain image */}
+      <section className="ad-left">
+        {art.imageUrl ? (
+          <img
+            src={imgSrc(art.imageUrl)}
+            alt={art.title || 'Artwork'}
+            className="ad-image"
+            loading="eager"
+          />
+        ) : (
+          <div className="ad-image ad-image-ph">No image</div>
+        )}
+      </section>
 
-        {/* Info (right) */}
-        <div className="art-info">
-          <div className="brand">PalettePunk</div>
-          <h1 className="title">{art.title || 'Untitled'}</h1>
-
-          <div className="byline">
-            By <strong>{authorName}</strong>
+      {/* RIGHT: details + feedback */}
+      <aside className="ad-right">
+        <div className="ad-card">
+          <div className="ad-title">{art.title || 'Untitled'}</div>
+          <div className="ad-sub">
+            By <b>{art?.author?.name || 'Unknown'}</b>
+            {price ? <> · <b>{price}</b></> : null}
           </div>
 
-          {typeof art.price === 'number' && (
-            <div className="price">Price: ${art.price}</div>
-          )}
-
           {art.tags?.length ? (
-            <div className="tags">
-              {art.tags.map((t, i) => (
-                <span className="tag" key={i}>#{t}</span>
-              ))}
+            <div className="ad-tags">
+              {art.tags.map((t, i) => <span key={`${t}-${i}`}>#{t}</span>)}
             </div>
           ) : null}
 
-          <p className="desc">
-            {art.description || 'No description provided.'}
-          </p>
-
-          <div className="divider" />
-
-          {/* Feedback section */}
-          <section className="feedback-sec">
-            <h3>Feedback</h3>
-
-            {/* Comment form first */}
-            {me ? (
-              <form className="feedback-form" onSubmit={submitFeedback}>
-                <textarea
-                  rows={3}
-                  value={feedback}
-                  onChange={(e) => setFeedback(e.target.value)}
-                  placeholder="Write your feedback…"
-                />
-                <button type="submit">Post Feedback</button>
-              </form>
-            ) : (
-              <p className="muted">Log in to leave feedback.</p>
-            )}
-
-            {/* Then the comments list */}
-            {art.comments?.length ? (
-              <ul className="comments">
-                {art.comments.map((c) => (
-                  <li key={c._id}>
-                    <div className="c-head">
-                      <span className="c-author">{c?.user?.name || 'User'}</span>
-                      <span className="c-time">
-                        {new Date(c.createdAt).toLocaleString()}
-                      </span>
-                    </div>
-                    <div className="c-body">{c.text}</div>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="muted">No feedback yet.</p>
-            )}
-          </section>
-        </div>
-      </div>
-
-      {/* Related feed BELOW the comment box */}
-      <section className="related-sec">
-        <h3>More like this</h3>
-        <div className="related-grid">
-          {related.map((r) => {
-            const rid = r._id;
-            const rimg = srcOf(r.imageUrl || r.image);
-            const rtitle = r.title || 'Untitled';
-            const rauthor = r?.author?.name || 'Unknown';
-
-            return (
-              <article
-                key={rid}
-                className="rel-card"
-                onClick={() => nav(`/art/${rid}`)}
-                role="button"
-              >
-                {rimg ? (
-                  <img src={rimg} alt={rtitle} loading="lazy" />
-                ) : (
-                  <div className="img-placeholder">No image</div>
-                )}
-                <div className="rel-meta">
-                  <div className="rel-title">{rtitle}</div>
-                  <div className="rel-sub">By {rauthor}</div>
-                </div>
-              </article>
-            );
-          })}
-          {!related.length && (
-            <p className="muted">No related artworks yet.</p>
+          {art.description ? (
+            <p className="ad-desc">{art.description}</p>
+          ) : (
+            <p className="ad-desc muted">No description.</p>
           )}
         </div>
-      </section>
+
+        <div className="ad-card">
+          <h3 className="ad-h3">Leave a feedback</h3>
+          <form onSubmit={onSendFeedback} className="ad-fb-form">
+            <textarea
+              rows={3}
+              placeholder="Say something nice or helpful…"
+              value={fbText}
+              onChange={(e) => setFbText(e.target.value)}
+            />
+            <div className="ad-actions">
+              <button className="btn primary" disabled={fbLoading || !fbText.trim()}>
+                {fbLoading ? 'Posting…' : 'Post'}
+              </button>
+              {fbErr && <span className="error" style={{ marginLeft: 8 }}>{fbErr}</span>}
+            </div>
+          </form>
+        </div>
+
+        <div className="ad-card">
+          <h3 className="ad-h3">Feedback</h3>
+          {!comments.length ? (
+            <p className="muted">No feedback yet.</p>
+          ) : (
+            <ul className="ad-fb-list">
+              {comments.map((c, i) => (
+                <li key={c._id || i} className="ad-fb-item">
+                  <div className="ad-fb-head">
+                    <b>{c.name}</b>
+                    <span className="ad-time">
+                      {c?.createdAt ? new Date(c.createdAt).toLocaleString() : ''}
+                    </span>
+                  </div>
+                  <div className="ad-fb-text">{c?.text}</div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </aside>
     </div>
   );
 }
